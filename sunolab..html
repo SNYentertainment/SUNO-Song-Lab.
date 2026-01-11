@@ -410,28 +410,36 @@
 
     /* ▼ スマホ（縦）向けレイアウト調整 */
     @media (max-width: 768px) {
-      main {
-        padding: 0.4rem;
-      }
-      .row {
-        flex-direction: column;
-        height: 100%;
-      }
-      .song-list {
-        flex: 0 0 auto;
-      }
-      .song-detail {
-        flex: 1 1 auto;
-      }
-      textarea {
-        min-height: 260px;
-        height: 260px;
-      }
-      .delete-song-wrapper {
-        top: 0.2rem;
-        right: 0.6rem;
-      }
-    }
+  main {
+    padding: 0.4rem;
+  }
+
+  .row {
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* 楽曲一覧カード：高さを画面の約45%までに制限して、中をスクロール */
+  .song-list {
+    flex: 0 0 auto;
+    max-height: 45vh;        /* ここでカード全体の高さを制限 */
+    min-height: 0;
+  }
+
+  .song-detail {
+    flex: 1 1 auto;
+  }
+
+  textarea {
+    min-height: 260px;
+    height: 260px;
+  }
+
+  .delete-song-wrapper {
+    top: 0.2rem;
+    right: 0.6rem;
+  }
+}
   </style>
 </head>
 <body>
@@ -687,7 +695,7 @@
     if (!state.songs.length) {
       const li = document.createElement("li");
       li.className = "empty-state";
-      li.textContent = "楽曲がありません。 「＋新規」で作成。";
+      li.textContent = "楽曲がありません。「＋新規」で作成。";
       songListEl.appendChild(li);
       return;
     }
