@@ -630,6 +630,7 @@
   const songTitleInput = document.getElementById("songTitleInput");
   const songStatusSelect = document.getElementById("songStatusSelect");
   const deleteSongBtn = document.getElementById("deleteSongBtn");
+  const deleteSongWrapper = document.querySelector(".delete-song-wrapper"); // ★ 追加
 
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabPromptEl = document.getElementById("tabPrompt");
@@ -686,7 +687,7 @@
     if (!state.songs.length) {
       const li = document.createElement("li");
       li.className = "empty-state";
-      li.textContent = "楽曲がありません。「＋ 新規」で作成。";
+      li.textContent = "楽曲がありません。 「＋新規」で作成。";
       songListEl.appendChild(li);
       return;
     }
@@ -747,10 +748,12 @@
     if (!song) {
       noSongSelectedEl.style.display = "block";
       songDetailContentEl.style.display = "none";
+      if (deleteSongWrapper) deleteSongWrapper.style.display = "none"; // ★ 曲がないときは非表示
       return;
     }
     noSongSelectedEl.style.display = "none";
     songDetailContentEl.style.display = "flex";
+    if (deleteSongWrapper) deleteSongWrapper.style.display = "block"; // ★ 曲があるときだけ表示
 
     songTitleInput.value = song.title || "";
     songStatusSelect.value = song.status || "制作中";
