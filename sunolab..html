@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>SUNO Song Lab.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SunoLab">
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      font-size: 16px;
+      color-scheme: light dark;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #020617;
+    }
+    body {
+      background: #020617;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+    }
+    * { box-sizing: border-box; }
+
+    header {
+      padding: 0.8rem 1rem;
+      background: linear-gradient(90deg,#1f2937,#111827);
+      border-bottom: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      justify-content: flex-start;
+    }
+    header span.logo-dot {
+      width: 0.8rem;
+      height: 0.8rem;
+      border-radius: 999px;
+      background: #38bdf8;
+      box-shadow: 0 0 10px rgba(56,189,248,.7);
+    }
+
+    main {
+      flex: 1;
+      padding: 0.6rem;
+      display: flex;
+      justify-content: stretch;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .card {
+      background: rgba(15,23,42,0.96);
+      border-radius: 0.9rem;
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.75);
+      padding: 0.9rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 0.6rem;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .song-list {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .song-detail {
+      flex: 3;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+
+    .delete-song-wrapper {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.9rem;
+      z-index: 10;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .song-item-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .song-item {
+      border-radius: 0.7rem;
+      border: 1px solid #1f2937;
+      padding: 0.45rem 0.6rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .08s;
+    }
+    .song-item:first-child {
+      margin-top: 0.25rem;
+    }
+    .song-item.active {
+      background: rgba(15,118,110,0.25);
+      border-color: #22c55e;
+      transform: translateY(-1px);
+    }
+    .song-item:hover {
+      background: rgba(15,23,42,0.9);
+    }
+    .song-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .song-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: #9ca3af;
+      width: 100%;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(148,163,184,0.6);
+      gap: 0.25rem;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .song-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.15rem;
+    }
+    .song-move-btn {
+      padding: 0.05rem 0.4rem;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    .song-move-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      background: #020617;
+      border-radius: 0.6rem;
+      border: 1px solid #1f2937;
+      padding: 0.45rem 0.6rem;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      outline: none;
+      resize: vertical;
+      min-height: 2.3rem;
+    }
+    textarea {
+      min-height: 420px;
+      height: 420px;
+      max-height: none;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.4);
+    }
+
+    .tabs,
+    .sub-tabs {
+      display: flex;
+      gap: 0.3rem;
+      margin: 0.2rem 0 0.5rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn,
+    .pill-btn {
+      border-radius: 999px;
+      border: 1px solid #374151;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.78rem;
+      background: #020617;
+      color: #d1d5db;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .tab-btn.active,
+    .pill-btn.active {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 0.28rem 0.7rem;
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+    .btn.primary {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #022c22;
+      font-weight: 600;
+    }
+    .btn.small {
+      font-size: 0.72rem;
+      padding: 0.18rem 0.45rem;
+    }
+    .btn.danger {
+      background: #991b1b;
+      border-color: #b91c1c;
+      color: #fee2e2;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .versions {
+      margin-top: 0.4rem;
+      border-top: 1px solid #1f2937;
+      padding-top: 0.3rem;
+    }
+    .versions h4 {
+      margin: 0 0 0.2rem;
+      font-size: 0.76rem;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .version-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .version-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+      border-bottom: 1px dashed #1f2937;
+      font-size: 0.74rem;
+    }
+    .version-label {
+      font-weight: 500;
+    }
+    .version-meta {
+      color: #6b7280;
+      font-size: 0.7rem;
+    }
+
+    .notes-list {
+      margin: 0.3rem 0 0;
+      padding: 0;
+      list-style: none;
+      max-height: 260px;
+      overflow-y: auto;
+      border-top: 1px solid #1f2937;
+    }
+    .note-item {
+      padding: 0.25rem 0;
+      border-bottom: 1px dashed #1f2937;
+      font-size: 0.78rem;
+    }
+    .note-meta {
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
+    .helper-text {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      margin-top: 0.15rem;
+    }
+
+    .status-select-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      align-items: flex-end;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .detail-header-left {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .song-detail-inner {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    #tabPrompt,
+    #tabLyrics,
+    #tabNotes {
+      height: calc(100% - 110px);
+      min-height: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    #noteTextarea {
+      min-height: 260px;
+      height: 260px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>
+    <span class="logo-dot"></span>
+    SUNO Song Lab.
+  </h1>
+</header>
+<main>
+  <div class="row">
+    <section class="song-list card">
+      <div class="section-title">
+        <span>楽曲一覧</span>
+        <button class="btn small" id="addSongBtn">＋ 新規</button>
+      </div>
+      <ul class="song-item-list" id="songList"></ul>
+    </section>
+
+    <section class="song-detail card">
+      <div class="delete-song-wrapper">
+        <button class="btn small danger" id="deleteSongBtn">🗑 削除</button>
+      </div>
+
+      <div id="noSongSelected" class="empty-state">
+        「＋新規」で作成するか、楽曲を選択するとここに制作画面が表示されます。
+      </div>
+      <div id="songDetailContent" class="song-detail-inner" style="display:none;">
+        <div class="detail-header">
+          <div class="detail-header-left">
+            <label for="songTitleInput">タイトル</label>
+            <input type="text" id="songTitleInput" placeholder="タイトルを入力">
+          </div>
+        </div>
+
+        <div class="status-select-row" style="margin-bottom:0.5rem;">
+          <div style="flex:1;min-width:130px;">
+            <label for="songStatusSelect">状態</label>
+            <select id="songStatusSelect">
+              <option value="制作中">制作中</option>
+              <option value="仮完成">仮完成</option>
+              <option value="完成">完成</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="lyrics">歌詞</button>
+          <button class="tab-btn" data-tab="prompt">スタイル</button>
+          <button class="tab-btn" data-tab="notes">メモ</button>
+        </div>
+
+        <!-- Prompt -->
+        <div id="tabPrompt" class="tab-panel">
+          <div class="sub-tabs">
+            <button class="pill-btn prompt-pattern-btn active" data-pattern="A">パターン A</button>
+            <button class="pill-btn prompt-pattern-btn" data-pattern="B">パターン B</button>
+            <button class="pill-btn prompt-pattern-btn" data-pattern="C">パターン C</button>
+          </div>
+          <label for="promptTextarea">スタイル（選択中パターンの最新版）</label>
+          <textarea id="promptTextarea" placeholder="SUNOに投げるスタイルを入力"></textarea>
+          <div class="helper-text">パターン A/B/Cで方向性を分けて使用できます。</div>
+          <div class="btn-row">
+            <button class="btn primary" id="savePromptBtn">保存</button>
+            <button class="btn" id="copyPromptBtn">コピー</button>
+          </div>
+          <div class="versions">
+            <h4>スタイル履歴 <span id="promptCurrentLabel" class="version-meta"></span></h4>
+            <ul class="version-list" id="promptVersionList"></ul>
+          </div>
+        </div>
+
+        <!-- Lyrics -->
+        <div id="tabLyrics" class="tab-panel">
+          <div class="sub-tabs">
+            <button class="pill-btn active" data-lyrics-type="readable">閲覧用</button>
+            <button class="pill-btn" data-lyrics-type="suno">SUNO用</button>
+          </div>
+
+          <div id="lyricsReadablePanel">
+            <label for="lyricsReadableTextarea">歌詞（閲覧用）</label>
+            <textarea id="lyricsReadableTextarea" placeholder="歌詞を入力"></textarea>
+            <div class="helper-text">閲覧用の歌詞。漢字・句読点など表現は自由。</div>
+            <div class="btn-row">
+              <button class="btn primary" id="saveLyricsReadableBtn">保存</button>
+              <button class="btn" id="copyLyricsReadableBtn">コピー</button>
+            </div>
+            <div class="versions">
+              <h4>閲覧用 歌詞履歴 <span id="lyricsReadableCurrentLabel" class="version-meta"></span></h4>
+              <ul class="version-list" id="lyricsReadableVersionList"></ul>
+            </div>
+          </div>
+
+          <div id="lyricsSunoPanel" style="display:none;">
+            <label for="lyricsSunoTextarea">歌詞（SUNO入力用）</label>
+            <textarea id="lyricsSunoTextarea" placeholder="SUNOに投げる歌詞を入力"></textarea>
+            <div class="helper-text">
+              ひらがな中心・セクションあり・改行自由。SUNOにそのままコピペする前提のテキスト。
+            </div>
+            <div class="btn-row">
+              <button class="btn primary" id="saveLyricsSunoBtn">保存</button>
+              <button class="btn" id="copyLyricsSunoBtn">コピー</button>
+            </div>
+            <div class="versions">
+              <h4>SUNO用 歌詞履歴 <span id="lyricsSunoCurrentLabel" class="version-meta"></span></h4>
+              <ul class="version-list" id="lyricsSunoVersionList"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div id="tabNotes" class="tab-panel">
+          <label for="noteTextarea">メモを追加</label>
+          <textarea id="noteTextarea" placeholder="テイクの感想・次やりたいこと・反省点など"></textarea>
+          <div class="btn-row">
+            <button class="btn primary" id="addNoteBtn">メモを追加</button>
+          </div>
+          <ul class="notes-list" id="notesList"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  // ★ 初期データ：配布用なので空にしてある
+  const initialData = {
+    songs: []
+  };
+
+  const STORAGE_KEY = "suno-song-lab-data-v1";
+
+  function normalizeStatus(raw) {
+    if (raw === "仮完成") return "仮完成";
+    if (raw === "完成候補" || raw === "完成") return "完成";
+    return "制作中";
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(initialData);
+      const parsed = JSON.parse(raw);
+      if (!parsed.songs || !Array.isArray(parsed.songs)) {
+        return structuredClone(initialData);
+      }
+      parsed.songs.forEach(song => {
+        (song.promptVersions || []).forEach(p => {
+          if (!p.pattern) p.pattern = "A";
+        });
+        song.status = normalizeStatus(song.status);
+      });
+      return parsed;
+    } catch {
+      return structuredClone(initialData);
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }
+
+  let state = loadData();
+  let currentSongId = state.songs[0]?.id || null;
+  let currentMainTab = "lyrics";
+  let currentLyricsType = "readable";
+  let currentPromptPattern = "A";
+
+  function formatDateNow() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function generateId(prefix) {
+    return `${prefix}-${Math.random().toString(36).substring(2,10)}`;
+  }
+
+  function getCurrentSong() {
+    return state.songs.find(s => s.id === currentSongId) || null;
+  }
+
+  const songListEl = document.getElementById("songList");
+  const addSongBtn = document.getElementById("addSongBtn");
+
+  const noSongSelectedEl = document.getElementById("noSongSelected");
+  const songDetailContentEl = document.getElementById("songDetailContent");
+
+  const songTitleInput = document.getElementById("songTitleInput");
+  const songStatusSelect = document.getElementById("songStatusSelect");
+  const deleteSongBtn = document.getElementById("deleteSongBtn");
+
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPromptEl = document.getElementById("tabPrompt");
+  const tabLyricsEl = document.getElementById("tabLyrics");
+  const tabNotesEl = document.getElementById("tabNotes");
+
+  const promptPatternButtons = document.querySelectorAll(".prompt-pattern-btn");
+  const promptTextarea = document.getElementById("promptTextarea");
+  const savePromptBtn = document.getElementById("savePromptBtn");
+  const copyPromptBtn = document.getElementById("copyPromptBtn");
+  const promptVersionListEl = document.getElementById("promptVersionList");
+  const promptCurrentLabelEl = document.getElementById("promptCurrentLabel");
+
+  const lyricsTypeButtons = document.querySelectorAll(".pill-btn[data-lyrics-type]");
+  const lyricsReadablePanel = document.getElementById("lyricsReadablePanel");
+  const lyricsSunoPanel = document.getElementById("lyricsSunoPanel");
+
+  const lyricsReadableTextarea = document.getElementById("lyricsReadableTextarea");
+  const saveLyricsReadableBtn = document.getElementById("saveLyricsReadableBtn");
+  const copyLyricsReadableBtn = document.getElementById("copyLyricsReadableBtn");
+  const lyricsReadableVersionListEl = document.getElementById("lyricsReadableVersionList");
+  const lyricsReadableCurrentLabelEl = document.getElementById("lyricsReadableCurrentLabel");
+
+  const lyricsSunoTextarea = document.getElementById("lyricsSunoTextarea");
+  const saveLyricsSunoBtn = document.getElementById("saveLyricsSunoBtn");
+  const copyLyricsSunoBtn = document.getElementById("copyLyricsSunoBtn");
+  const lyricsSunoVersionListEl = document.getElementById("lyricsSunoVersionList");
+  const lyricsSunoCurrentLabelEl = document.getElementById("lyricsSunoCurrentLabel");
+
+  const noteTextarea = document.getElementById("noteTextarea");
+  const addNoteBtn = document.getElementById("addNoteBtn");
+  const notesListEl = document.getElementById("notesList");
+
+  function statusColor(status) {
+    if (status === "仮完成") return "#eab308";
+    if (status === "完成") return "#ef4444";
+    return "#22c55e";
+  }
+
+  function moveSong(songId, direction) {
+    const idx = state.songs.findIndex(s => s.id === songId);
+    if (idx < 0) return;
+    if (direction === "up" && idx === 0) return;
+    if (direction === "down" && idx === state.songs.length - 1) return;
+    const newIdx = direction === "up" ? idx - 1 : idx + 1;
+    const [song] = state.songs.splice(idx, 1);
+    state.songs.splice(newIdx, 0, song);
+    saveData();
+    renderSongList();
+  }
+
+  function renderSongList() {
+    songListEl.innerHTML = "";
+    if (!state.songs.length) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.textContent = "楽曲がありません。 「＋新規」で作成。";
+      songListEl.appendChild(li);
+      return;
+    }
+    state.songs.forEach((song, index) => {
+      const li = document.createElement("li");
+      li.className = "song-item" + (song.id === currentSongId ? " active" : "");
+      li.dataset.songId = song.id;
+
+      const title = document.createElement("div");
+      title.className = "song-title";
+      title.textContent = song.title || "（無題）";
+
+      const meta = document.createElement("div");
+      meta.className = "song-meta";
+
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      const col = statusColor(song.status);
+      dot.style.background = col;
+      dot.style.boxShadow = `0 0 6px ${col}80`;
+      badge.appendChild(dot);
+      const statusSpan = document.createElement("span");
+      statusSpan.textContent = song.status || "制作中";
+      badge.appendChild(statusSpan);
+
+      const controls = document.createElement("div");
+      controls.className = "song-controls";
+      const upBtn = document.createElement("button");
+      upBtn.className = "song-move-btn";
+      upBtn.textContent = "↑";
+      upBtn.dataset.songId = song.id;
+      upBtn.dataset.direction = "up";
+      if (index === 0) upBtn.disabled = true;
+
+      const downBtn = document.createElement("button");
+      downBtn.className = "song-move-btn";
+      downBtn.textContent = "↓";
+      downBtn.dataset.songId = song.id;
+      downBtn.dataset.direction = "down";
+      if (index === state.songs.length - 1) downBtn.disabled = true;
+
+      controls.appendChild(upBtn);
+      controls.appendChild(downBtn);
+
+      meta.appendChild(badge);
+      meta.appendChild(controls);
+
+      li.appendChild(title);
+      li.appendChild(meta);
+      songListEl.appendChild(li);
+    });
+  }
+
+  function renderSongDetail() {
+    const song = getCurrentSong();
+    if (!song) {
+      noSongSelectedEl.style.display = "block";
+      songDetailContentEl.style.display = "none";
+      return;
+    }
+    noSongSelectedEl.style.display = "none";
+    songDetailContentEl.style.display = "flex";
+
+    songTitleInput.value = song.title || "";
+    songStatusSelect.value = song.status || "制作中";
+
+    updatePromptPatternButtons();
+    renderPromptArea(song);
+
+    const currentReadable = song.lyricsReadableVersions?.find(v => v.isCurrent) || song.lyricsReadableVersions?.[song.lyricsReadableVersions.length - 1];
+    lyricsReadableTextarea.value = currentReadable?.body || "";
+
+    const currentSuno = song.lyricsSunoVersions?.find(v => v.isCurrent) || song.lyricsSunoVersions?.[song.lyricsSunoVersions.length - 1];
+    lyricsSunoTextarea.value = currentSuno?.body || "";
+
+    renderLyricsVersions(song);
+    renderNotes(song);
+    updateTabVisibility();
+  }
+
+  function renderPromptArea(song) {
+    const listAll = song.promptVersions || [];
+    const list = listAll.filter(v => (v.pattern || "A") === currentPromptPattern);
+    const currentPrompt = list.find(v => v.isCurrent) || list[list.length - 1];
+    promptTextarea.value = currentPrompt?.body || "";
+    renderPromptVersions(song);
+  }
+
+  function renderPromptVersions(song) {
+    promptVersionListEl.innerHTML = "";
+    const listAll = song.promptVersions || [];
+    const list = listAll.filter(v => (v.pattern || "A") === currentPromptPattern);
+    const current = list.find(v => v.isCurrent);
+    promptCurrentLabelEl.textContent = current ? `現在: ${current.label} (${current.pattern || "A"})` : "";
+
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.textContent = "このパターンにはまだスタイルがありません。";
+      promptVersionListEl.appendChild(li);
+      return;
+    }
+
+    list.slice().reverse().forEach(v => {
+      const li = document.createElement("li");
+      li.className = "version-item";
+
+      const left = document.createElement("div");
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "version-label";
+      labelSpan.textContent = v.label || "(no label)";
+      const metaSpan = document.createElement("span");
+      metaSpan.className = "version-meta";
+      metaSpan.textContent = `${v.pattern || "A"} / ${v.createdAt || ""}`;
+      left.appendChild(labelSpan);
+      left.appendChild(document.createElement("br"));
+      left.appendChild(metaSpan);
+
+      const right = document.createElement("div");
+      const useBtn = document.createElement("button");
+      useBtn.className = "btn small";
+      if (v.isCurrent) {
+        useBtn.textContent = "適用中";
+        useBtn.disabled = true;
+        useBtn.classList.add("primary");
+      } else {
+        useBtn.textContent = "このverを適用";
+        useBtn.addEventListener("click", () => {
+          song.promptVersions.forEach(pv => {
+            if ((pv.pattern || "A") === (v.pattern || "A")) {
+              pv.isCurrent = false;
+            }
+          });
+          v.isCurrent = true;
+          saveData();
+          renderSongDetail();
+        });
+      }
+
+      right.appendChild(useBtn);
+      li.appendChild(left);
+      li.appendChild(right);
+      promptVersionListEl.appendChild(li);
+    });
+  }
+
+  function renderLyricsVersions(song) {
+    // 閲覧用
+    lyricsReadableVersionListEl.innerHTML = "";
+    const rl = song.lyricsReadableVersions || [];
+    const rlCurrent = rl.find(v => v.isCurrent);
+    lyricsReadableCurrentLabelEl.textContent = rlCurrent ? `現在: ${rlCurrent.label}` : "";
+    if (!rl.length) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.textContent = "まだ閲覧用 歌詞はありません。";
+      lyricsReadableVersionListEl.appendChild(li);
+    } else {
+      rl.slice().reverse().forEach(v => {
+        const li = document.createElement("li");
+        li.className = "version-item";
+        const left = document.createElement("div");
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "version-label";
+        labelSpan.textContent = v.label || "(no label)";
+        const metaSpan = document.createElement("span");
+        metaSpan.className = "version-meta";
+        metaSpan.textContent = v.createdAt || "";
+        left.appendChild(labelSpan);
+        left.appendChild(document.createElement("br"));
+        left.appendChild(metaSpan);
+
+        const right = document.createElement("div");
+        const useBtn = document.createElement("button");
+        useBtn.className = "btn small";
+        if (v.isCurrent) {
+          useBtn.textContent = "適用中";
+          useBtn.disabled = true;
+          useBtn.classList.add("primary");
+        } else {
+          useBtn.textContent = "このverを適用";
+          useBtn.addEventListener("click", () => {
+            song.lyricsReadableVersions.forEach(x => x.isCurrent = false);
+            v.isCurrent = true;
+            saveData();
+            renderSongDetail();
+          });
+        }
+        right.appendChild(useBtn);
+        li.appendChild(left);
+        li.appendChild(right);
+        lyricsReadableVersionListEl.appendChild(li);
+      });
+    }
+
+    // SUNO用
+    lyricsSunoVersionListEl.innerHTML = "";
+    const sl = song.lyricsSunoVersions || [];
+    const slCurrent = sl.find(v => v.isCurrent);
+    lyricsSunoCurrentLabelEl.textContent = slCurrent ? `現在: ${slCurrent.label}` : "";
+    if (!sl.length) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.textContent = "まだSUNO用 歌詞はありません。";
+      lyricsSunoVersionListEl.appendChild(li);
+    } else {
+      sl.slice().reverse().forEach(v => {
+        const li = document.createElement("li");
+        li.className = "version-item";
+        const left = document.createElement("div");
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "version-label";
+        labelSpan.textContent = v.label || "(no label)";
+        const metaSpan = document.createElement("span");
+        metaSpan.className = "version-meta";
+        metaSpan.textContent = v.createdAt || "";
+        left.appendChild(labelSpan);
+        left.appendChild(document.createElement("br"));
+        left.appendChild(metaSpan);
+
+        const right = document.createElement("div");
+        const useBtn = document.createElement("button");
+        useBtn.className = "btn small";
+        if (v.isCurrent) {
+          useBtn.textContent = "適用中";
+          useBtn.disabled = true;
+          useBtn.classList.add("primary");
+        } else {
+          useBtn.textContent = "このverを適用";
+          useBtn.addEventListener("click", () => {
+            song.lyricsSunoVersions.forEach(x => x.isCurrent = false);
+            v.isCurrent = true;
+            saveData();
+            renderSongDetail();
+          });
+        }
+        right.appendChild(useBtn);
+        li.appendChild(left);
+        li.appendChild(right);
+        lyricsSunoVersionListEl.appendChild(li);
+      });
+    }
+  }
+
+  function renderNotes(song) {
+    notesListEl.innerHTML = "";
+    const notes = song.notes || [];
+    if (!notes.length) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.style.borderTop = "none";
+      li.textContent = "まだメモはありません。";
+      notesListEl.appendChild(li);
+      return;
+    }
+    notes.slice().reverse().forEach(n => {
+      const li = document.createElement("li");
+      li.className = "note-item";
+      const bodyDiv = document.createElement("div");
+      bodyDiv.textContent = n.body;
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "note-meta";
+      metaDiv.textContent = n.createdAt || "";
+      li.appendChild(bodyDiv);
+      li.appendChild(metaDiv);
+      notesListEl.appendChild(li);
+    });
+  }
+
+  function updateTabVisibility() {
+    tabPromptEl.style.display = currentMainTab === "prompt" ? "flex" : "none";
+    tabLyricsEl.style.display = currentMainTab === "lyrics" ? "flex" : "none";
+    tabNotesEl.style.display = currentMainTab === "notes" ? "flex" : "none";
+
+    tabButtons.forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === currentMainTab);
+    });
+
+    lyricsReadablePanel.style.display = currentLyricsType === "readable" ? "block" : "none";
+    lyricsSunoPanel.style.display = currentLyricsType === "suno" ? "block" : "none";
+
+    lyricsTypeButtons.forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.lyricsType === currentLyricsType);
+    });
+  }
+
+  function updatePromptPatternButtons() {
+    promptPatternButtons.forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.pattern === currentPromptPattern);
+    });
+  }
+
+  function copyToClipboard(text) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  addSongBtn.addEventListener("click", () => {
+    const newSong = {
+      id: generateId("song"),
+      title: "新規",
+      status: "制作中",
+      promptVersions: [],
+      lyricsReadableVersions: [],
+      lyricsSunoVersions: [],
+      notes: []
+    };
+    state.songs.push(newSong);
+    currentSongId = newSong.id;
+    saveData();
+    renderSongList();
+    renderSongDetail();
+  });
+
+  songListEl.addEventListener("click", (e) => {
+    const moveBtn = e.target.closest(".song-move-btn");
+    if (moveBtn) {
+      const songId = moveBtn.dataset.songId;
+      const direction = moveBtn.dataset.direction;
+      moveSong(songId, direction);
+      e.stopPropagation();
+      return;
+    }
+
+    const item = e.target.closest(".song-item");
+    if (!item) return;
+    const id = item.dataset.songId;
+    currentSongId = id;
+    renderSongList();
+    renderSongDetail();
+  });
+
+  songTitleInput.addEventListener("input", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    song.title = songTitleInput.value;
+    saveData();
+    renderSongList();
+  });
+
+  songStatusSelect.addEventListener("change", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    song.status = songStatusSelect.value;
+    saveData();
+    renderSongList();
+  });
+
+  deleteSongBtn.addEventListener("click", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    const title = song.title || "（無題）";
+    if (!confirm(`「${title}」を削除しますか？`)) return;
+    state.songs = state.songs.filter(s => s.id !== song.id);
+    currentSongId = state.songs[0]?.id ?? null;
+    saveData();
+    renderSongList();
+    renderSongDetail();
+  });
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentMainTab = btn.dataset.tab;
+      updateTabVisibility();
+    });
+  });
+
+  lyricsTypeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentLyricsType = btn.dataset.lyricsType;
+      updateTabVisibility();
+    });
+  });
+
+  promptPatternButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentPromptPattern = btn.dataset.pattern;
+      const song = getCurrentSong();
+      if (!song) return;
+      updatePromptPatternButtons();
+      renderPromptArea(song);
+    });
+  });
+
+  savePromptBtn.addEventListener("click", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    const body = promptTextarea.value.trim();
+    if (!body) return;
+    song.promptVersions = song.promptVersions || [];
+    const listForPattern = song.promptVersions.filter(v => (v.pattern || "A") === currentPromptPattern);
+    const newVersion = {
+      id: generateId("pv"),
+      label: `v${listForPattern.length + 1}`,
+      pattern: currentPromptPattern,
+      body,
+      isCurrent: true,
+      createdAt: formatDateNow()
+    };
+    song.promptVersions.forEach(v => {
+      if ((v.pattern || "A") === currentPromptPattern) v.isCurrent = false;
+    });
+    song.promptVersions.push(newVersion);
+    saveData();
+    renderSongDetail();
+  });
+
+  copyPromptBtn.addEventListener("click", () => {
+    copyToClipboard(promptTextarea.value);
+  });
+
+  saveLyricsReadableBtn.addEventListener("click", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    const body = lyricsReadableTextarea.value.trim();
+    if (!body) return;
+    song.lyricsReadableVersions = song.lyricsReadableVersions || [];
+    const newVersion = {
+      id: generateId("lr"),
+      label: `v${song.lyricsReadableVersions.length + 1}`,
+      body,
+      isCurrent: true,
+      createdAt: formatDateNow()
+    };
+    song.lyricsReadableVersions.forEach(v => v.isCurrent = false);
+    song.lyricsReadableVersions.push(newVersion);
+    saveData();
+    renderSongDetail();
+  });
+
+  copyLyricsReadableBtn.addEventListener("click", () => {
+    copyToClipboard(lyricsReadableTextarea.value);
+  });
+
+  saveLyricsSunoBtn.addEventListener("click", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    const body = lyricsSunoTextarea.value.trim();
+    if (!body) return;
+    song.lyricsSunoVersions = song.lyricsSunoVersions || [];
+    const newVersion = {
+      id: generateId("ls"),
+      label: `v${song.lyricsSunoVersions.length + 1}`,
+      body,
+      isCurrent: true,
+      createdAt: formatDateNow()
+    };
+    song.lyricsSunoVersions.forEach(v => v.isCurrent = false);
+    song.lyricsSunoVersions.push(newVersion);
+    saveData();
+    renderSongDetail();
+  });
+
+  copyLyricsSunoBtn.addEventListener("click", () => {
+    copyToClipboard(lyricsSunoTextarea.value);
+  });
+
+  addNoteBtn.addEventListener("click", () => {
+    const song = getCurrentSong();
+    if (!song) return;
+    const body = noteTextarea.value.trim();
+    if (!body) return;
+    song.notes = song.notes || [];
+    song.notes.push({
+      id: generateId("note"),
+      body,
+      createdAt: formatDateNow()
+    });
+    noteTextarea.value = "";
+    saveData();
+    renderNotes(song);
+  });
+
+  renderSongList();
+  renderSongDetail();
+  updateTabVisibility();
+  updatePromptPatternButtons();
+</script>
+</body>
+</html>
